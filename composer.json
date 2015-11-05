@@ -14,8 +14,8 @@
         "illuminate/container": "^5.1",
         "illuminate/database": "^5.1",
         "illuminate/events": "^5.1",
-        "doctrine/couchdb": "^1.0@dev",
-        "doctrine/couchdb-odm": "dev-master"
+        "doctrine/couchdb": "1.0.0-beta2",
+        "doctrine/couchdb-odm": "1.0.0ALPHA2"
     },
     "license": "MIT",
     "authors": [
