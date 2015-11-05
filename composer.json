@@ -1,0 +1,39 @@
+{
+    "name": "an3/laravel-couchdb",
+    "description": "A CouchDB based Eloquent model and Query builder for Laravel 5.x",
+    "keywords": [
+        "laravel",
+        "eloquent",
+        "couchdb",
+        "database",
+        "model"
+      ],
+    "type": "laravel-package",
+    "require": {
+        "illuminate/support": "^5.2@dev",
+        "illuminate/container": "^5.2@dev",
+        "illuminate/database": "^5.2@dev",
+        "illuminate/events": "^5.2@dev",
+        "doctrine/couchdb": "^1.0@dev",
+        "doctrine/couchdb-odm": "dev-master"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andres Rojas",
+            "email": "andres.rojas.isaza@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "version": "1.0.0",
+    "autoload": {
+    "psr-4": {
+      "An3\\": "src/An3/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "An3\\": "src/An3/"
+    }
+  },
+}
