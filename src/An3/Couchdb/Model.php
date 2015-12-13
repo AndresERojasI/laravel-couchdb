@@ -157,6 +157,11 @@ abstract class Model extends BaseModel
         return $instance;
     }
 
+    public function getDocumentManager()
+    {
+        return $this->dm;
+    }
+
     /**
      * Begin querying the model.
      *
@@ -444,7 +449,7 @@ abstract class Model extends BaseModel
             $model->fill($attributes);
             $model->getConnection()->dm->flush();
 
-            return $model;
+            return true;
         }
     }
 

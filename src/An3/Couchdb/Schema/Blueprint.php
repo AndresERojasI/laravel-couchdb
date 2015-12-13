@@ -1,6 +1,6 @@
 <?php
 
-namespace An3\Mongodb\Schema;
+namespace An3\Couchdb\Schema;
 
 use Closure;
 use Illuminate\Database\Connection;
@@ -8,9 +8,9 @@ use Illuminate\Database\Connection;
 class Blueprint extends \Illuminate\Database\Schema\Blueprint
 {
     /**
-     * The MongoConnection object for this blueprint.
+     * The CouchdbConnection object for this blueprint.
      *
-     * @var MongoConnection
+     * @var CouchdbConnection
      */
     protected $connection;
 
@@ -20,6 +20,9 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @var MongoCollection
      */
     protected $collection;
+
+    protected $id;
+    protected $rev;
 
     /**
      * Fluent columns.
@@ -37,8 +40,11 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     public function __construct(Connection $connection, $collection)
     {
         $this->connection = $connection;
-
-        $this->collection = $connection->getCollection($collection);
+        try {
+            $this->collection = $connection->getCollection($collection);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            $this->collection = ['type' => $collection];
+        }
     }
 
     /**
@@ -183,12 +189,10 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      */
     public function create()
     {
-        $collection = $this->collection->getName();
-
-        $db = $this->connection->getMongoDB();
-
-        // Ensure the collection is created.
-        $db->createCollection($collection);
+        list($id, $rev) = $this->connection->postDocument(array('type' => $this->collection['type']));
+        $this->id = $id;
+        $this->rev = $rev;
+        $this->collection = $this->connection->findDocument($id)->body;
     }
 
     /**

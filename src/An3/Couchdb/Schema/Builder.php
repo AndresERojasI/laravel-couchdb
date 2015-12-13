@@ -1,9 +1,9 @@
 <?php
 
-namespace An3\Mongodb\Schema;
+namespace An3\Couchdb\Schema;
 
 use Closure;
-use An3\Mongodb\Connection;
+use An3\Couchdb\Connection;
 
 class Builder extends \Illuminate\Database\Schema\Builder
 {
@@ -51,9 +51,23 @@ class Builder extends \Illuminate\Database\Schema\Builder
      */
     public function hasCollection($collection)
     {
-        $db = $this->connection->getMongoDB();
+        $db = $this->connection;
+        $all_docs = $db->allDocs();
+        if (!isset($all_docs->status) && $all_docs->status !== 200) {
+            throw new Exception("Couldn't connect to the database");
+        }
 
-        return in_array($collection, $db->getCollectionNames());
+        $present = false;
+
+        foreach ($all_docs->body['rows'] as $item) {
+            if (isset($item['doc']['type']) && $item['doc']['type'] === $collection) {
+                $present = true;
+            } elseif (isset($item['type']) && $item['type'] === $collection) {
+                $present = true;
+            }
+        }
+
+        return $present;
     }
 
     /**
@@ -111,10 +125,6 @@ class Builder extends \Illuminate\Database\Schema\Builder
         $blueprint = $this->createBlueprint($collection);
 
         $blueprint->create();
-
-        if ($callback) {
-            $callback($blueprint);
-        }
     }
 
     /**

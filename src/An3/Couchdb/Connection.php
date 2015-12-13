@@ -5,6 +5,7 @@ namespace An3\Couchdb;
 use Doctrine\Common\Annotations\AnnotationReader as AnnotationReader;
 use Doctrine\ODM\CouchDB\Mapping\Driver\AnnotationDriver as AnnotationDriver;
 use Doctrine\Common\Annotations\AnnotationRegistry as AnnotationRegistry;
+use Doctrine\CouchDB\View\FolderDesignDocument;
 
 class Connection extends \Illuminate\Database\Connection
 {
@@ -33,9 +34,10 @@ class Connection extends \Illuminate\Database\Connection
             'ssl' => false,
             'models_dir' => app_path(),
             'lucene_handler_name' => '_fti',
-            'proxies_dir' => app_path().'storage/proxies',
+            'proxies_dir' => app_path().'storage'.DIRECTORY_SEPARATOR.'proxies',
             'keep-alive' => true,
             'timeout' => '0.01',
+            'views_folder' => '../app/couchdb',
         ];
 
         $config = array_replace_recursive($default_config, $config);
@@ -160,18 +162,26 @@ class Connection extends \Illuminate\Database\Connection
         $documentPaths = array($this->config['models_dir']);
         $httpClient = new \Doctrine\CouchDB\HTTP\SocketClient($this->config['host'], $this->config['port'], $this->config['username'], $this->config['password'], $this->config['ip'], $this->config['ssl']);
         $httpClient->setOption('keep-alive', $this->config['keep-alive']);
+
         //$httpClient->setOption('timeout', $this->config['timeout']);
         $this->configManager = new \Doctrine\ODM\CouchDB\Configuration();
+
         //$this->metadataDriver = $this->configManager->newDefaultAnnotationDriver($documentPaths);
         $this->metadataDriver = new AnnotationDriver(new AnnotationReader(), $documentPaths);
+
         // registering noop annotation autoloader - allow all annotations by default
         AnnotationRegistry::registerLoader('class_exists');
+
         $this->configManager->setProxyDir($this->config['proxies_dir']);
         $this->configManager->setMetadataDriverImpl($this->metadataDriver);
         $this->configManager->setLuceneHandlerName($this->config['lucene_handler_name']);
 
         $connection = new \Doctrine\CouchDB\CouchDBClient($httpClient, $databaseName);
         $this->dm = new \Doctrine\ODM\CouchDB\DocumentManager($connection, $this->configManager);
+
+        $view = new FolderDesignDocument($this->config['views_folder']);
+
+        $connection->createDesignDocument('couchdb', $view);
 
         return $connection;
     }
@@ -230,9 +240,5 @@ class Connection extends \Illuminate\Database\Connection
      */
     public function select($query, $bindings = [], $useReadPdo = false)
     {
-        var_dump($query);
-        var_dump($bindings);
-        var_dump($useReadPdo);
-        die();
     }
 }

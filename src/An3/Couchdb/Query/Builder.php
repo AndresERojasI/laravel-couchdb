@@ -50,6 +50,13 @@ class Builder extends BaseBuilder
     public $hint;
 
     /**
+     * [$whereData description].
+     *
+     * @var [type]
+     */
+    private $whereData = [];
+
+    /**
      * Indicate if we are executing a pagination query.
      *
      * @var bool
@@ -421,31 +428,21 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Add a basic where clause to the query.
+     * [where description].
      *
-     * @param string $column
-     * @param string $operator
-     * @param mixed  $value
-     * @param string $boolean
+     * @param [type] $searchInfo [description]
      *
-     * @return \Illuminate\Database\Query\Builder|static
-     *
-     * @throws \InvalidArgumentException
+     * @return [type] [description]
      */
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
-        $params = func_get_args();
-
-        // Remove the leading $ from operators.
-        if (func_num_args() == 3) {
-            $operator = &$params[1];
-
-            if (starts_with($operator, '$')) {
-                $operator = substr($operator, 1);
-            }
+        if ($boolean === 'and') {
+            $this->whereData = array_merge($this->whereData, $column);
+        } else {
+            $this->whereData = $column;
         }
 
-        return call_user_func_array('parent::where', $params);
+        return $this;
     }
 
     /**
@@ -688,7 +685,27 @@ class Builder extends BaseBuilder
     public function first($columns = [])
     {
         $repository = $this->connection->getRepository($this->documentName);
+        if (empty($columns)) {
+            return $repository->findOneBy($this->whereData);
+        } else {
+            return $repository->findOneBy($columns);
+        }
+    }
 
-        return $repository->findOneBy($columns);
+    /**
+     * [all description].
+     *
+     * @param array $columns [description]
+     *
+     * @return [type] [description]
+     */
+    public function all($columns = [])
+    {
+        $repository = $this->connection->getRepository($this->documentName);
+        if (empty($columns)) {
+            return $repository->findBy($this->whereData);
+        } else {
+            return $repository->findBy($columns);
+        }
     }
 }
